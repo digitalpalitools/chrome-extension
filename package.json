@@ -1,0 +1,104 @@
+{
+  "name": "@digitalpalitools/chrome-extension",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "lint": "tsc --noEmit && eslint .",
+    "lint:staged": "lint-staged"
+  },
+  "dependencies": {
+    "@craco/craco": "^7.0.0-alpha.3",
+    "@material-ui/core": "^4.11.1",
+    "@material-ui/icons": "^4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.57",
+    "@material-ui/styles": "^4.11.2",
+    "@microsoft/applicationinsights-react-js": "3.1.0",
+    "@microsoft/applicationinsights-web": "2.6.2",
+    "@testing-library/jest-dom": "^5.16.1",
+    "@testing-library/react": "^12.1.2",
+    "@testing-library/user-event": "^13.5.0",
+    "buffer": "^6.0.3",
+    "copy-webpack-plugin": "6.2.1",
+    "file-saver": "^2.0.5",
+    "history": "^5.0.0",
+    "html-webpack-plugin": "^5.5.0",
+    "i18next": "^19.8.9",
+    "i18next-browser-languagedetector": "^6.0.1",
+    "i18next-http-backend": "^1.1.0",
+    "jszip": "^3.5.0",
+    "lodash": "^4.17.21",
+    "luxon": "^1.25.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "5.0.0",
+    "sql.js": "^1.4.0",
+    "styled-components": "^5.2.1",
+    "web-vitals": "^2.1.3",
+    "xmldom": "^0.5.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.176",
+    "@types/file-saver": "^2.0.1",
+    "@types/jest": "^27.4.0",
+    "@types/lodash": "^4.14.168",
+    "@types/luxon": "^1.25.0",
+    "@types/node": "^16.11.21",
+    "@types/react": "^17.0.38",
+    "@types/react-dom": "^17.0.11",
+    "@types/react-router-dom": "^5.3.0",
+    "@types/sql.js": "^1.4.0",
+    "@types/styled-components": "^5.1.4",
+    "@types/webpack": "^4.41.25",
+    "@types/xmldom": "^0.1.30",
+    "@types/yargs": "^15.0.7",
+    "@typescript-eslint/eslint-plugin": "^5.19.0",
+    "@typescript-eslint/parser": "^5.19.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.0.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jest": "^26.1.4",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.29.4",
+    "eslint-plugin-react-hooks": "^4.4.0",
+    "husky": "^4.3.0",
+    "lint-staged": "^10.5.2",
+    "prettier": "^2.6.0",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.4.4",
+    "ts-loader": "^8.0.11",
+    "tsconfig-paths": "^3.9.0",
+    "tsconfig-paths-webpack-plugin": "^3.3.0",
+    "typescript": "^4.5.4",
+    "wasm-loader": "^1.3.0",
+    "webpack-cli": "^4.2.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "lint-staged": {
+    "*.{ts,js,tsx,jsx}": [
+      "eslint --cache"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint:staged"
+    }
+  }
+}

@@ -1,0 +1,92 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  continuous-deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Create build version
+        id: createbuildversion
+        run:
+          echo "::set-output name=buildversion::$(date +'%y.%m%d').${{ github.run_number }}"
+
+      - name: Check build version
+        run:
+          echo "Using version ${{steps.createbuildversion.outputs.buildversion}}"
+
+      - name: Install
+        run: yarn --no-progress --non-interactive --frozen-lockfile
+
+      - name: Update locale files
+        run: python3 tools/refreshLocaleFiles.py
+
+      - name: Lint code
+        run:
+          yarn lint
+
+      - name: Test
+        run: yarn test --colors --coverage --passWithNoTests
+
+      - name: Build
+        run: yarn build
+        env:
+          REACT_APP_RELATIVE_ROOT: /apps # NOTE: Ensure no trailing '/'
+          REACT_APP_VERSION: ${{steps.createbuildversion.outputs.buildversion}}
+          REACT_APP_AI_INSTRUMENTATION_KEY: ${{ secrets.AZURE_CREDENTIALS_KSAPPLICATIONS_AI_KEY }}
+
+      - name: Set PWA scope
+        uses: benday-inc/set-property-value-in-appsettings@main
+        with:
+          pathtosettingsfile: './build/manifest.json'
+          keyname1: 'scope'
+          valuetoset: '/apps/'
+
+      - name: Generate app.ver
+        run: echo ${{steps.createbuildversion.outputs.buildversion}} >./build/app.ver
+
+      - name: Azure Login
+        if: github.event_name != 'pull_request'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_KSAPPLICATIONS_STORAGE }}
+
+      - name: Deploy
+        if: github.event_name != 'pull_request'
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.0.72
+          inlineScript: |
+              az storage blob upload-batch --account-name ksapplications -d '$web\apps' -s ./build
+
+      - name: Set blob properties
+        if: github.event_name != 'pull_request'
+        run: |
+              az storage blob upload --account-name ksapplications --container-name '$web' --name 'apps/service-worker.js' --file ./build/service-worker.js --content-cache-control 'no-store max-age=0'
+              az storage blob upload --account-name ksapplications --container-name '$web' --name 'apps/app.ver' --file ./build/app.ver --content-cache-control 'no-store max-age=0'
+              az storage blob update --account-name ksapplications --container-name '$web' --name 'apps/static/js/sql-wasm.wasm' --content-type "application/wasm"
+              dir ./build/*.module.wasm | % { echo $_.Name; az storage blob update --account-name ksapplications --container-name '$web' --name "apps/$($_.Name)" --content-type "application/wasm" }
+        shell: pwsh
+
+      - name: Azure Logout
+        if: github.event_name != 'pull_request'
+        run: |
+              az logout
+
+      - name: Notify DPT on Discord
+        if: github.event_name != 'pull_request'
+        env:
+          JOB_STATUS: ${{ job.status }}
+          WEBHOOK_URL: ${{ secrets.DISCORD_DPT_DEPLOYMENT_NOTIFICATIONS_WEBHOOK_URL }}
+          HOOK_OS_NAME: ${{ runner.os }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+        run: |
+          git clone https://github.com/DiscordHooks/github-actions-discord-webhook webhook
+          bash webhook/send.sh $JOB_STATUS $WEBHOOK_URL
+        shell: bash
